@@ -1,5 +1,6 @@
 (ns round-the-rabbit.playground-test
-  (:use midje.sweet)
+  (:use midje.sweet
+        [clojure.pprint :only [pprint cl-format]])
   (:require [round-the-rabbit.playground :as playground])
   (:import java.io.IOException))
 
@@ -8,14 +9,14 @@
   (prerequisites
    (playground/sleep anything) => anything)
 
-  (let [test-config
-        {:on-connection (fn [connection] (println "Connected!" connection))
-         :max-reconnect-attempts 100}]
+  (let [test-config {:max-reconnect-attempts 100
+                     :on-connection (fn [state] (println "Connected!"))}
+        new-state (atom {:config test-config})]
 
     (fact "tries connecting until it connects"
       (playground/connect! test-config) => anything
       (provided
-        (playground/connect-once! anything) =streams=> [false false true] :times 3))))
+        (playground/connect-once! anything) =streams=> [nil nil new-state] :times 3))))
 
 (facts
   (fact

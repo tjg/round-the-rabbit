@@ -59,9 +59,11 @@
         binding-args (dissoc :queue :exchange)]
     (apply rmq-queue/bind channel queue exchange binding-args)))
 
-(defn make-on-connection-shutdown [config]
+(declare connect-with-state!)
+
+(defn make-on-connection-shutdown [state]
   (fn [cause]
-    (connect! config)))
+    (connect-with-state! state)))
 
 (defn make-on-channel-shutdown [connection]
   (rmq/shutdown-listener
@@ -70,34 +72,41 @@
        (try (rmq/close connection)
             (catch Exception e))))))
 
-(defn connect-once! [config]
+(defn connect-once! [state]
   (try
-    (let [conn (rmq/connect (merge (:login config) (first (:addresses config))))
+    (let [config (:config @state)
+          conn (rmq/connect (merge (:login config) (first (:addresses config))))
           channel (rmq-channel/open conn)
           queues   (map #(declare-queue channel %)
                         (ensure-seq (:declare-queues config)))
           bindings (map #(bind channel %)
-                        (ensure-seq (:bindings config)))
-          state (atom {:connection conn :channel channel :config config})]
-      (.addShutdownListener conn    (make-on-connection-shutdown config))
+                        (ensure-seq (:bindings config)))]
+      (reset! state {:connection conn :channel channel :config config})
+      (.addShutdownListener conn    (make-on-connection-shutdown state))
       (.addShutdownListener channel (make-on-channel-shutdown conn))
       state)
     (catch IOException e
-      ((:on-new-connection-fail config) e))))
+      ((:on-new-connection-fail (:config @state)) e)
+      (reset! state {:connection nil :channel nil :config (:config @state)})
+      state)))
+
+(defn connect-with-state! [state]
+  (loop [attempt-count 0]
+    (when-not (= attempt-count (:max-reconnect-attempts (:config @state)))
+      (let [new-state (connect-once! state)]
+        (if new-state
+          (do
+            ((:on-connection (:config @new-state)) new-state)
+            new-state)
+          (do
+            (sleep (nth (ensure-repeating-seq
+                         (:ms-between-restarts (:config @state)))
+                        attempt-count))
+            (recur (inc attempt-count))))))))
 
 (defn connect! [config]
   (let [config (merge default-config config)]
-    (loop [attempt-count 0]
-      (when-not (= attempt-count (:max-reconnect-attempts config))
-        (let [connection-state (connect-once! config)]
-          (if connection-state
-            (do
-              ((:on-connection config) connection-state)
-              connection-state)
-            (do
-              (sleep (nth (ensure-repeating-seq (:ms-between-restarts config))
-                          attempt-count))
-              (recur (inc attempt-count)))))))))
+    (connect-with-state! (atom {:connection nil :channel nil :config config}))))
 
 (defn fixed+random [init scale-of-randomness]
   (map (fn [fixed]

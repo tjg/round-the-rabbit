@@ -45,7 +45,13 @@
    :channel-restart-strategy :restart-connection})
 
 (defn connect-once! [config]
-  true)
+  (let [{:keys [username password]} (:login config)
+        {:keys [host port]} (first (:addresses config))]
+    (println username password host port)
+    (rmq/connect {:host host
+                  :port port
+                  :username username
+                  :password password})))
 
 (defn connect! [config]
   (let [config (merge default-config config)]
@@ -55,7 +61,7 @@
           (if connection
             (do
               ((:on-connection config) connection)
-              nil)
+              connection)
             (do
               (sleep (nth (ensure-repeating-seq (:ms-between-restarts config))
                           attempt-count))

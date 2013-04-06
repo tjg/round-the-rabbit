@@ -4,16 +4,15 @@
   (:import java.io.IOException))
 
 
-(def test-config
-  {:on-connection (fn [connection]
-                    (println "Connected!" connection))
-   :max-reconnect-attempts 100})
-
 (facts "retries on connection failure"
   (prerequisites
    (playground/sleep anything) => anything)
 
-  (fact "tries connecting until it connects"
-    (playground/connect! test-config) => anything
-    (provided
-      (playground/connect-once! anything) =streams=> [false false true] :times 3)))
+  (let [test-config
+        {:on-connection (fn [connection] (println "Connected!" connection))
+         :max-reconnect-attempts 100}]
+
+    (fact "tries connecting until it connects"
+      (playground/connect! test-config) => anything
+      (provided
+        (playground/connect-once! anything) =streams=> [false false true] :times 3))))

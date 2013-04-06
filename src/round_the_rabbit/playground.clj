@@ -50,7 +50,7 @@
 (defn connect! [config]
   (let [config (merge default-config config)]
     (loop [attempt-count 0]
-      (when (not= attempt-count (:max-reconnect-attempts config))
+      (when-not (= attempt-count (:max-reconnect-attempts config))
         (let [connection (connect-once! config)]
           (if connection
             (do

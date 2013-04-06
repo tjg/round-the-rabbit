@@ -16,3 +16,11 @@
       (playground/connect! test-config) => anything
       (provided
         (playground/connect-once! anything) =streams=> [false false true] :times 3))))
+
+(facts
+  (fact
+    (playground/ensure-seq []) => [])
+
+  (fact
+    (playground/ensure-seq {}) => [{}]
+    (playground/ensure-seq [{}]) => [{}]))

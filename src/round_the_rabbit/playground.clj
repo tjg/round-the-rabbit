@@ -11,7 +11,8 @@
 
 
 (defn ensure-seq [obj]
-  (if (coll? obj)
+  (if (and (coll? obj)
+           (not (map? obj)))
     obj
     [obj]))
 
@@ -35,6 +36,7 @@
   {:addresses [{:host "localhost" :port ConnectionFactory/DEFAULT_AMQP_PORT}]
    :login {:username "guest" :password "guest"}
    :vhost "/"
+   :declare-exchanges []
    :declare-queues []
    :bindings []
    ;; Number or seq. If finite seq, eventually use last element
@@ -46,15 +48,23 @@
    :on-channel-close (constantly nil)
    :channel-restart-strategy :restart-connection})
 
+(defn declare-queue [channel queue-config]
+  (let [queue (:name queue-config)
+        queue-args (dissoc queue-config :name)]
+    (apply rmq-queue/declare channel queue queue-args)))
+
+(defn bind [channel binding-config]
+  (let [{:keys [queue exchange]} binding-config
+        binding-args (dissoc :queue :exchange)]
+    (apply rmq-queue/bind channel queue exchange binding-args)))
+
 (defn connect-once! [config]
   (try
-    (let [{:keys [username password]} (:login config)
-          {:keys [host port]} (first (:addresses config))]
-      (println username password host port)
-      (rmq/connect {:host host
-                    :port port
-                    :username username
-                    :password password}))
+    (let [conn (rmq/connect (merge (:login config) (first (:addresses config))))
+          setup-channel (rmq-channel/open conn)
+          queues   (map declare-queue (ensure-seq (:declare-queues config)))
+          bindings (map bind          (ensure-seq (:bindings config)))]
+      conn)
     (catch IOException e
       ((:on-new-connection-fail config) e))))
 

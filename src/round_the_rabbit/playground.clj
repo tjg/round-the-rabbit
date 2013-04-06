@@ -14,6 +14,19 @@
     obj
     [obj]))
 
+(defn ensure-repeating [aseq]
+  (lazy-seq
+   (cond (empty? aseq)
+         (repeat nil)
+
+         (empty? (rest aseq))
+         (cons (first aseq) (ensure-repeating (repeat (first aseq))))
+
+         :else
+         (cons (first aseq) (ensure-repeating (rest aseq))))))
+
+(def ensure-repeating-seq (comp ensure-repeating ensure-seq))
+
 (defn sleep [ms]
   (Thread/sleep ms))
 
@@ -30,19 +43,6 @@
    :on-connection-close (constantly nil)
    :on-channel-close (constantly nil)
    :channel-restart-strategy :restart-connection})
-
-(defn ensure-repeating [aseq]
-  (lazy-seq
-   (cond (empty? aseq)
-         (repeat nil)
-
-         (empty? (rest aseq))
-         (cons (first aseq) (ensure-repeating (repeat (first aseq))))
-
-         :else
-         (cons (first aseq) (ensure-repeating (rest aseq))))))
-
-(def ensure-repeating-seq (comp ensure-repeating ensure-seq))
 
 (defn connect-once! [config]
   true)

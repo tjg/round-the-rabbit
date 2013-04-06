@@ -65,11 +65,12 @@
   (fn [cause]
     (connect-with-state! state)))
 
-(defn make-on-channel-shutdown [connection]
+(defn make-on-channel-shutdown [state]
   (rmq/shutdown-listener
    (fn [cause]
      (when-not (.isHardError cause)
-       (try (rmq/close connection)
+       (try (rmq/close (:connection @state))
+            ;; FIXME: coordinate with on-connection-shutdown via atom to restart?
             (catch Exception e))))))
 
 (defn connect-once! [state]
@@ -83,7 +84,7 @@
                         (ensure-seq (:bindings config)))]
       (reset! state {:connection conn :channel channel :config config})
       (.addShutdownListener conn    (make-on-connection-shutdown state))
-      (.addShutdownListener channel (make-on-channel-shutdown conn))
+      (.addShutdownListener channel (make-on-channel-shutdown state))
       state)
     (catch IOException e
       ((:on-new-connection-fail (:config @state)) e)

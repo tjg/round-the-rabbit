@@ -5,7 +5,7 @@
   (:import java.io.IOException))
 
 
-(facts "retries on connection failure"
+(facts "retries when connection fails"
   (prerequisites
    (playground/sleep anything) => anything)
 
@@ -13,10 +13,11 @@
                      :on-connection (fn [state] (println "Connected!"))}
         new-state (atom {:config test-config})]
 
-    (fact "tries connecting until it connects"
+    (fact "tries connecting until connected"
       (playground/connect! test-config) => anything
       (provided
-        (playground/connect-once! anything) =streams=> [nil nil new-state] :times 3))))
+        (playground/connect-once! anything) =streams=> [nil nil new-state]
+          :times 3))))
 
 (facts
   (fact

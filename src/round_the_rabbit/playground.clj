@@ -5,7 +5,8 @@
             [langohr.consumers :as rmq-consumers]
             [langohr.queue     :as rmq-queue])
   (:use [clojure.pprint :only [pprint cl-format]])
-  (:import [com.rabbitmq.client ConnectionFactory]))
+  (:import [com.rabbitmq.client ConnectionFactory]
+           java.io.IOException))
 
 
 
@@ -40,18 +41,22 @@
    :ms-between-restarts 1
    :max-reconnect-attempts nil
    :on-connection (constantly nil)
+   :on-new-connection-fail (constantly nil)
    :on-connection-close (constantly nil)
    :on-channel-close (constantly nil)
    :channel-restart-strategy :restart-connection})
 
 (defn connect-once! [config]
-  (let [{:keys [username password]} (:login config)
-        {:keys [host port]} (first (:addresses config))]
-    (println username password host port)
-    (rmq/connect {:host host
-                  :port port
-                  :username username
-                  :password password})))
+  (try
+    (let [{:keys [username password]} (:login config)
+          {:keys [host port]} (first (:addresses config))]
+      (println username password host port)
+      (rmq/connect {:host host
+                    :port port
+                    :username username
+                    :password password}))
+    (catch IOException e
+      ((:on-new-connection-fail config) e))))
 
 (defn connect! [config]
   (let [config (merge default-config config)]

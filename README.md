@@ -4,13 +4,13 @@ A Clojure library designed to ... well, that part is up to you.
 
 ## Missing
 
-Multiple addresses
-different queue declarations
-declaring exchanges
+* Multiple addresses
+* Exotic queue declarations
+* Declaring exchanges
 
 ## Quirks
 
-if queue's name is a keyword, it's server-assigned. you can use this
+If a queue's name is a keyword, it's server-assigned. You can use this
 keyword in bindings.
 
 ## Usage

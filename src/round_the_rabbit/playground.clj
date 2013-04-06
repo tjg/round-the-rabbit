@@ -62,8 +62,9 @@
 (declare connect-with-state!)
 
 (defn make-on-connection-shutdown [state]
-  (fn [cause]
-    (connect-with-state! state)))
+  (rmq/shutdown-listener
+   (fn [cause]
+     (connect-with-state! state))))
 
 (defn make-on-channel-shutdown [state]
   (rmq/shutdown-listener

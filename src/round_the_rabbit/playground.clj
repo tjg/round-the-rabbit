@@ -64,6 +64,7 @@
 (defn make-on-connection-shutdown [state]
   (rmq/shutdown-listener
    (fn [cause]
+     (reset! state {:connection nil :channel nil :config (:config @state)})
      (connect-with-state! state))))
 
 (defn make-on-channel-shutdown [conn]
@@ -77,17 +78,26 @@
   (try
     (let [config (:config @state)
           conn (rmq/connect (merge (:login config) (first (:addresses config))))
+          _ (swap! state #(assoc % conn))
           channel (rmq-channel/open conn)
           queues   (map #(declare-queue channel %)
                         (ensure-seq (:declare-queues config)))
           bindings (map #(bind channel %)
                         (ensure-seq (:bindings config)))]
       (reset! state {:connection conn :channel channel :config config})
+      ;; Make sure .addShutdownListener is after anything which throws
+      ;; exceptions if connection fails..
       (.addShutdownListener conn    (make-on-connection-shutdown state))
       (.addShutdownListener channel (make-on-channel-shutdown conn))
       state)
     (catch IOException e
       ((:on-new-connection-fail (:config @state)) e)
+      (try
+        ;; Fortunately, .addShutdownListener doesn't throw exceptions.
+        ;; So no need to remove the connection's shutdown listener
+        ;; before closing it, since it won't try to reconnect.
+        (rmq/close (:connection @state))
+        (catch IOException e))
       (reset! state {:connection nil :channel nil :config (:config @state)})
       state)))
 

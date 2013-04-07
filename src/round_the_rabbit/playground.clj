@@ -59,6 +59,13 @@
         binding-args (dissoc binding-config :queue :exchange)]
     (apply rmq-queue/bind channel queue exchange binding-args)))
 
+(defn subscribe-to-queue [channel consumer-config]
+  (.start (Thread. #(apply rmq-consumers/subscribe
+                           channel
+                           (:queue consumer-config)
+                           (:handler consumer-config)
+                           (dissoc consumer-config :queue :handler)))))
+
 (declare connect-with-state!)
 
 (defn make-on-connection-shutdown [state]
@@ -88,9 +95,11 @@
           on-connection-shutdown (make-on-connection-shutdown state)]
       (reset! state {:connection conn :channel channel :config config
                      :on-connection-shutdown on-connection-shutdown})
-      ;; Once we add a shutdown-listener, auto-reconnect can happen.
+      ;; Once we add a shutdown-listener, auto-reconnect can happen,
+      ;; and "state" can have a new value.
       (.addShutdownListener conn on-connection-shutdown)
       (.addShutdownListener channel (make-on-channel-shutdown conn))
+      (doall (map #(subscribe-to-queue channel %) (:consumers @state)))
       state)
     (catch Exception e
       ((:on-new-connection-fail (:config @state)) state e)

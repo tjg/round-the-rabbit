@@ -1,14 +1,14 @@
 # round-the-rabbit
 
-A Clojure library designed to ... well, that part is up to you.
+Not done yet.
 
 ## TODO
 
-* Multiple addresses
+* Multiple addresses (waiting on a patch to Langohr, to not complicate this lib)
 * Exotic queue declarations
 * Declaring exchanges
 * Server-assigned queue names
-* Subscribing to queues
+* Simple queue declaration, where it's just a string.
 
 ## Positive quirks
 
@@ -17,7 +17,11 @@ keyword in bindings.
 
 ## Usage
 
-FIXME
+(def my-rabbitmq-connection
+  (connect!
+   {:addresses {:host "localhost" :port 5672}
+    :login {:username "guest" :password "foobar}
+    :declare-queues "my-queue"}))
 
 ## License
 

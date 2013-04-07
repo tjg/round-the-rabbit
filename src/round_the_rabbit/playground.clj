@@ -84,21 +84,22 @@
           queues   (map #(declare-queue channel %)
                         (ensure-seq (:declare-queues config)))
           bindings (map #(bind channel %)
-                        (ensure-seq (:bindings config)))]
-      (reset! state {:connection conn :channel channel :config config})
-      ;; Make sure .addShutdownListener is after anything which throws
-      ;; exceptions if connection fails..
-      (.addShutdownListener conn    (make-on-connection-shutdown state))
+                        (ensure-seq (:bindings config)))
+          on-connection-shutdown (make-on-connection-shutdown state)]
+      (reset! state {:connection conn :channel channel :config config
+                     :on-connection-shutdown on-connection-shutdown})
+      ;; Once we add a shutdown-listener, auto-reconnect can happen.
+      (.addShutdownListener conn on-connection-shutdown)
       (.addShutdownListener channel (make-on-channel-shutdown conn))
       state)
     (catch Exception e
-      ((:on-new-connection-fail (:config @state)) e)
+      ((:on-new-connection-fail (:config @state)) state e)
       (try
-        ;; Fortunately, .addShutdownListener doesn't throw exceptions.
-        ;; So no need to remove the connection's shutdown listener
-        ;; before closing it, since it won't try to reconnect.
-        (when (:connection @state)
-          (rmq/close (:connection @state)))
+        (let [{:keys [connection on-connection-shutdown]} @state]
+          (when connection
+            (with-open [conn connection]
+              (when on-connection-shutdown
+                (.removeShutdownListener connection on-connection-shutdown)))))
         (catch Exception e))
       (reset! state {:connection nil :channel nil :config (:config @state)})
       state)))

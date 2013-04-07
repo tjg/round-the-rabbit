@@ -33,8 +33,10 @@
   (Thread/sleep ms))
 
 (def default-config
-  {:addresses [{:host "localhost" :port ConnectionFactory/DEFAULT_AMQP_PORT}]
-   :login {:username "guest" :password "guest"}
+  {:addresses [{:host ConnectionFactory/DEFAULT_HOST
+                :port ConnectionFactory/DEFAULT_AMQP_PORT}]
+   :login {:username ConnectionFactory/DEFAULT_USER
+           :password ConnectionFactory/DEFAULT_PASS}
    :vhost "/"
    :declare-exchanges []
    :declare-queues []

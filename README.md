@@ -7,7 +7,6 @@ Not done yet.
 * Multiple addresses (waiting on a patch to Langohr, to not complicate this lib)
 * Exotic queue declarations
 * Declaring exchanges
-* Server-assigned queue names
 * Simple queue declaration, where it's just a string.
 
 ## Positive quirks

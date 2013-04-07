@@ -53,12 +53,19 @@
 
 (defn declare-queue [channel queue-config]
   (let [queue (:name queue-config)
+        queue (if (string? queue) queue "")
         queue-args (dissoc queue-config :name)]
     (apply rmq-queue/declare channel queue queue-args)))
 
-(defn bind [channel binding-config]
+(defn make-queue-ref-table [queue-declarations queues]
+  (into {}
+        (map (fn [queue-decl queue] [(:name queue-decl) queue])
+             queue-declarations queues)))
+
+(defn bind [channel queue-lookup binding-config]
   (let [{:keys [queue exchange]} binding-config
-        binding-args (dissoc binding-config :queue :exchange)]
+        binding-args (dissoc binding-config :queue :exchange)
+        queue (if (string? queue) queue (queue-lookup queue))]
     (apply rmq-queue/bind channel queue exchange binding-args)))
 
 (defn subscribe-to-queue [channel consumer-config]
@@ -92,7 +99,8 @@
           channel (rmq-channel/open conn)
           queues   (doall (map #(declare-queue channel %)
                                (ensure-seq (:declare-queues config))))
-          bindings (doall (map #(bind channel %)
+          queue-lookup (make-queue-ref-table (:declare-queues config) queues)
+          bindings (doall (map #(bind channel queue-lookup %)
                                (ensure-seq (:bindings config))))
           on-connection-shutdown (make-on-connection-shutdown state)]
       (reset! state {:connection conn :channel channel :config config

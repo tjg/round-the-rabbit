@@ -2,13 +2,15 @@
 
 A Clojure library designed to ... well, that part is up to you.
 
-## Missing
+## TODO
 
 * Multiple addresses
 * Exotic queue declarations
 * Declaring exchanges
+* Server-assigned queue names
+* Subscribing to queues
 
-## Quirks
+## Positive quirks
 
 If a queue's name is a keyword, it's server-assigned. You can use this
 keyword in bindings.

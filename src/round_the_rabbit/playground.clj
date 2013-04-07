@@ -81,10 +81,10 @@
           conn (rmq/connect (merge (:login config) (first (:addresses config))))
           _ (swap! state #(assoc % :connection conn))
           channel (rmq-channel/open conn)
-          queues   (map #(declare-queue channel %)
-                        (ensure-seq (:declare-queues config)))
-          bindings (map #(bind channel %)
-                        (ensure-seq (:bindings config)))
+          queues   (doall (map #(declare-queue channel %)
+                               (ensure-seq (:declare-queues config))))
+          bindings (doall (map #(bind channel %)
+                               (ensure-seq (:bindings config))))
           on-connection-shutdown (make-on-connection-shutdown state)]
       (reset! state {:connection conn :channel channel :config config
                      :on-connection-shutdown on-connection-shutdown})

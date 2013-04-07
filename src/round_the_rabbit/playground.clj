@@ -64,8 +64,9 @@
 (defn make-on-connection-shutdown [state]
   (rmq/shutdown-listener
    (fn [cause]
-     (reset! state {:connection nil :channel nil :config (:config @state)})
-     (connect-with-state! state))))
+     (when-not (:force-shutdown? @state)
+       (reset! state {:connection nil :channel nil :config (:config @state)})
+       (connect-with-state! state)))))
 
 (defn make-on-channel-shutdown [conn]
   (rmq/shutdown-listener
@@ -119,6 +120,10 @@
 (defn connect! [config]
   (let [config (merge default-config config)]
     (connect-with-state! (atom {:connection nil :channel nil :config config}))))
+
+(defn close! [state]
+  (swap! state #(assoc % :force-shutdown? true))
+  (rmq/close (:connection @state)))
 
 (defn fixed+random [init scale-of-randomness]
   (map (fn [fixed]

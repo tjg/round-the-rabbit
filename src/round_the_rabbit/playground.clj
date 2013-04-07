@@ -56,7 +56,7 @@
 
 (defn bind [channel binding-config]
   (let [{:keys [queue exchange]} binding-config
-        binding-args (dissoc :queue :exchange)]
+        binding-args (dissoc binding-config :queue :exchange)]
     (apply rmq-queue/bind channel queue exchange binding-args)))
 
 (declare connect-with-state!)
@@ -78,7 +78,7 @@
   (try
     (let [config (:config @state)
           conn (rmq/connect (merge (:login config) (first (:addresses config))))
-          _ (swap! state #(assoc % conn))
+          _ (swap! state #(assoc % :connection conn))
           channel (rmq-channel/open conn)
           queues   (map #(declare-queue channel %)
                         (ensure-seq (:declare-queues config)))
@@ -90,14 +90,15 @@
       (.addShutdownListener conn    (make-on-connection-shutdown state))
       (.addShutdownListener channel (make-on-channel-shutdown conn))
       state)
-    (catch IOException e
+    (catch Exception e
       ((:on-new-connection-fail (:config @state)) e)
       (try
         ;; Fortunately, .addShutdownListener doesn't throw exceptions.
         ;; So no need to remove the connection's shutdown listener
         ;; before closing it, since it won't try to reconnect.
-        (rmq/close (:connection @state))
-        (catch IOException e))
+        (when (:connection @state)
+          (rmq/close (:connection @state)))
+        (catch Exception e))
       (reset! state {:connection nil :channel nil :config (:config @state)})
       state)))
 
@@ -105,7 +106,7 @@
   (loop [attempt-count 0]
     (when-not (= attempt-count (:max-reconnect-attempts (:config @state)))
       (let [new-state (connect-once! state)]
-        (if new-state
+        (if (:connection @new-state)
           (do
             ((:on-connection (:config @new-state)) new-state)
             new-state)

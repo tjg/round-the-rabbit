@@ -52,11 +52,18 @@
    :on-channel-shutdown (constantly nil)
    :channel-restart-strategy :restart-connection})
 
+(defn normalize-queue-declaration [declaration]
+  (if (string? declaration)
+    {:name declaration}
+    declaration))
+
 (defn declare-queue [channel queue-config]
-  (let [queue (:name queue-config)
-        queue (if (string? queue) queue "")
-        queue-args (dissoc queue-config :name)]
-    (apply rmq-queue/declare channel queue queue-args)))
+  (let [queue-config (normalize-queue-declaration queue-config)
+        name (:name queue-config)
+        name (if (string? name) name "")
+        options (dissoc queue-config :name)]
+    (apply rmq-queue/declare channel name options)))
+
 (defn declare-exchange [channel exchange-config]
   (let [{:keys [name type]} exchange-config
         options (dissoc exchange-config :name :type)]

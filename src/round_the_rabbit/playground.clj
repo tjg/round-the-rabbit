@@ -3,6 +3,7 @@
             [langohr.basic     :as rmq-basic]
             [langohr.channel   :as rmq-channel]
             [langohr.consumers :as rmq-consumers]
+            [langohr.exchange  :as rmq-exchange]
             [langohr.queue     :as rmq-queue])
   (:use [clojure.pprint :only [pprint cl-format]])
   (:import [com.rabbitmq.client ConnectionFactory]
@@ -56,6 +57,10 @@
         queue (if (string? queue) queue "")
         queue-args (dissoc queue-config :name)]
     (apply rmq-queue/declare channel queue queue-args)))
+(defn declare-exchange [channel exchange-config]
+  (let [{:keys [name type]} exchange-config
+        options (dissoc exchange-config :name :type)]
+    (apply rmq-exchange/declare channel name type options)))
 
 (defn make-queue-ref-table [queue-declarations queues]
   (into {}

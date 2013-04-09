@@ -109,11 +109,13 @@
           conn (rmq/connect (merge (:login config) (first (:addresses config))))
           _ (swap! state #(assoc % :connection conn))
           channel (rmq-channel/open conn)
-          queues   (doall (map #(declare-queue channel %)
-                               (ensure-seq (:declare-queues config))))
+          exchanges (doall (map #(declare-exchange channel %)
+                                (ensure-seq (:declare-exchanges config))))
+          queues    (doall (map #(declare-queue channel %)
+                                (ensure-seq (:declare-queues config))))
           queue-lookup (make-queue-ref-table (:declare-queues config) queues)
-          bindings (doall (map #(bind channel queue-lookup %)
-                               (ensure-seq (:bindings config))))
+          bindings  (doall (map #(bind channel queue-lookup %)
+                                (ensure-seq (:bindings config))))
           on-connection-shutdown (make-on-connection-shutdown state)]
       (reset! state {:connection conn :channel channel :config config
                      :on-connection-shutdown on-connection-shutdown})

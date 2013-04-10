@@ -7,4 +7,6 @@
                  [org.clojure/data.json "0.2.1"]
                  [com.novemberain/langohr "1.0.0-beta13"]
                  [com.taoensso/timbre "1.5.2"]]
-  :profiles {:dev {:dependencies [[midje "1.5.1"]]}})
+  :profiles {:dev {:dependencies [[midje "1.5.1"]]}}
+  :warn-on-reflection true
+  :jvm-opts ["-Xmx512m"])

@@ -33,14 +33,15 @@ just gives it the default config):
     :bindings [{:exchange "exchange-1" :queue "queue-1"}]}))
 ```
 
-If you declare one exchange or one queue, you don't need to put it in a list:
+If you declare only one exchange and/or one queue, you don't need to put
+it in a list:
 
 ```clojure
 (def conn-state
   (connect! {:declare-queues "queue-10"}))
 ```
 
-There's a bunch of knobs
+There's a bunch of knobs:
 
 ```clojure
 (def conn-state

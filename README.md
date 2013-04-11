@@ -1,12 +1,17 @@
 # round-the-rabbit
 
-Not done yet.
+Simple way to use RabbitMQ:
+* auto-reconnect
+* declarative interface
+* light wrapper atop Langohr, so you can use all its powers
+
 
 ## TODO
 
 * Multiple addresses (waiting on a patch to Langohr, to not complicate this lib)
 * Exotic queue declarations
 * Type hints (warn on reflection)
+* How to deal with unrecoverable exceptions, like changing exchange type?
 
 ## Positive quirks
 

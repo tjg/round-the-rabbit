@@ -20,14 +20,47 @@ keyword in bindings.
 
 ## Usage
 
-(def my-rabbitmq-connection
+Make a couple exchanges and queues (`queue-1`'s simple declaration
+just gives it the default config):
+
+```clojure
+(def conn-state
   (connect!
-   {:addresses {:host "localhost" :port 5672}
-    :login {:username "guest" :password "foobar}
-    :declare-queues "my-queue"}))
+   {:declare-exchanges [{:name "exchange-1" :type "fanout"}
+                        {:name "exchange-2" :type "topic"}]
+    :declare-queues ["queue-1"
+                     {:name "queue-2" :durable true :auto-delete true}]
+    :bindings [{:exchange "exchange-1" :queue "queue-1"}]}))
+```
+
+If you declare one exchange or one queue, you don't need to put it in a list:
+
+```clojure
+(def conn-state
+  (connect! {:declare-queues "queue-10"}))
+```
+
+There's a bunch of knobs
+
+```clojure
+(def conn-state
+  (connect!
+   {:declare-queues "queue-1"
+
+    :bindings [{:exchange "exchange-1", :queue "queue-1"}]
+    :on-connection (fn [conn-state] (println "Connected!" conn-state))
+    :on-new-connection-fail (fn [conn-state ex] (.printStackTrace ex))
+    :max-reconnect-attempts 10
+    :ms-between-restarts 1
+
+    :addresses [{:host "example.com" :port 5566}]
+    :login {:username "my-username" :password "my-password"}
+    :vhost "/my-vhost"}))
+```
+
 
 ## License
 
-Copyright © 2013 FIXME
+Copyright © 2013 Tj Gabbour
 
 Distributed under the Eclipse Public License, the same as Clojure.

@@ -1,4 +1,4 @@
-(ns round-the-rabbit.playground
+(ns round-the-rabbit.core
   (:require [langohr.core      :as rmq]
             [langohr.basic     :as rmq-basic]
             [langohr.channel   :as rmq-channel]

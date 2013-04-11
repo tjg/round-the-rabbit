@@ -16,6 +16,9 @@ Simple way to use RabbitMQ:
 * Exotic queue declarations
 * Type hints (warn on reflection)
 * How to deal with unrecoverable exceptions, like changing exchange type?
+* Tests
+* `connect!` should return a better object than a bare atom
+* Documentation
 
 ## Positive quirks
 

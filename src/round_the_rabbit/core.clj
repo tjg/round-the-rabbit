@@ -123,7 +123,7 @@
       ;; and "state" can have a new value.
       (.addShutdownListener conn on-connection-shutdown)
       (.addShutdownListener channel (make-on-channel-shutdown conn))
-      (doall (map #(subscribe-to-queue channel %) (:consumers @state)))
+      (doall (map #(subscribe-to-queue channel %) (:consumers config)))
       state)
     ;; FIXME: discover what exceptions to expect.
     (catch Exception e

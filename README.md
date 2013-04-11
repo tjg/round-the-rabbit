@@ -48,7 +48,7 @@ it in a collection:
   (connect! {:declare-queues "queue-10"}))
 ```
 
-Attach a consumer to a queue (the consumer doesn't have to be in a collection):
+Attach a consumer to a queue (the consumer doesn't have to be in a vector/list):
 
 ```clojure
 (def conn-state-10

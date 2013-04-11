@@ -41,11 +41,21 @@ just gives it the default config):
 ```
 
 If you declare only one exchange and/or one queue, you don't need to put
-it in a list:
+it in a collection:
 
 ```clojure
 (def conn-state
   (connect! {:declare-queues "queue-10"}))
+```
+
+Attach a consumer to a queue (the consumer doesn't have to be in a collection):
+
+```clojure
+(def conn-state-10
+  (connect! {:declare-queues "queue-10"
+             :consumers [{:queue "queue-10"
+                          :handler (fn [ch metadata ^bytes payload]
+                                     (println (String. payload "UTF-8")))}]}))
 ```
 
 There's a bunch of knobs:

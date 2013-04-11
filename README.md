@@ -6,6 +6,10 @@ Simple way to use RabbitMQ:
 * light wrapper atop Langohr, so you can use all its powers
 
 
+## Status
+
+**Not release-ready yet.**
+
 ## TODO
 
 * Multiple addresses (waiting on a patch to Langohr, to not complicate this lib)
@@ -48,7 +52,6 @@ There's a bunch of knobs:
   (connect!
    {:declare-queues "queue-1"
 
-    :bindings [{:exchange "exchange-1", :queue "queue-1"}]
     :on-connection (fn [conn-state] (println "Connected!" conn-state))
     :on-new-connection-fail (fn [conn-state ex] (.printStackTrace ex))
     :max-reconnect-attempts 10

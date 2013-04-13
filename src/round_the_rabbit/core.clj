@@ -11,11 +11,8 @@
 
 
 
-(defn ensure-vector [obj]
-  (if (and (coll? obj)
-           (not (map? obj)))
-    obj
-    [obj]))
+(defn ensure-sequential [obj]
+  (if (sequential? obj) obj [obj]))
 
 (defn ensure-repeating [aseq]
   (lazy-seq
@@ -28,7 +25,7 @@
          :else
          (cons (first aseq) (ensure-repeating (rest aseq))))))
 
-(def ensure-repeating-seq (comp ensure-repeating ensure-vector))
+(def ensure-repeating-seq (comp ensure-repeating ensure-sequential))
 
 (defn sleep [ms]
   (Thread/sleep ms))
@@ -110,12 +107,12 @@
           _ (swap! state #(assoc % :connection conn))
           channel (rmq-channel/open conn)
           exchanges (doall (map #(declare-exchange channel %)
-                                (ensure-vector (:declare-exchanges config))))
+                                (ensure-sequential (:declare-exchanges config))))
           queues    (doall (map #(declare-queue channel %)
-                                (ensure-vector (:declare-queues config))))
+                                (ensure-sequential (:declare-queues config))))
           queue-lookup (make-queue-ref-table (:declare-queues config) queues)
           bindings  (doall (map #(bind channel queue-lookup %)
-                                (ensure-vector (:bindings config))))
+                                (ensure-sequential (:bindings config))))
           on-connection-shutdown (make-on-connection-shutdown state)]
       (reset! state {:connection conn :channel channel :config config
                      :on-connection-shutdown on-connection-shutdown})
@@ -123,7 +120,8 @@
       ;; and "state" can have a new value.
       (.addShutdownListener conn on-connection-shutdown)
       (.addShutdownListener channel (make-on-channel-shutdown conn))
-      (doall (map #(subscribe-to-queue channel %) (ensure-vector (:consumers config))))
+      (doall (map #(subscribe-to-queue channel %)
+                  (ensure-sequential (:consumers config))))
       state)
     (catch IOException e
       (try

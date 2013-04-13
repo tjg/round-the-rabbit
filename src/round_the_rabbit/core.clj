@@ -156,7 +156,7 @@
                         attempt-count))
             (recur (inc attempt-count))))))))
 
-(defn connect! [config]
+(defn connect [config]
   (let [config (merge default-config config)]
     (connect-with-state! (atom {:connection nil :channel nil :config config}))))
 
@@ -165,8 +165,7 @@
   (rmq/close (:connection @state)))
 
 (defn fixed+random [init scale-of-randomness]
-  (map (fn [fixed]
-         (+ fixed (rand scale-of-randomness)))
+  (map (fn [fixed] (+ fixed (rand scale-of-randomness)))
        (repeat init)))
 
 (defn bounded-exponential-backoff [init maximum]

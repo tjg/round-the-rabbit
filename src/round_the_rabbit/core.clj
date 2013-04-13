@@ -41,7 +41,7 @@
    :bindings []
    :consumers []
    ;; Number or seq. If finite seq, eventually use last element
-   :ms-between-restarts 1
+   :ms-between-restarts 500
    :max-reconnect-attempts nil
    :on-connection (constantly nil)
    :on-new-connection-fail (constantly nil)

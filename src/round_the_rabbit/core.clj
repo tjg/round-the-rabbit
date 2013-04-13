@@ -125,8 +125,7 @@
       (.addShutdownListener channel (make-on-channel-shutdown conn))
       (doall (map #(subscribe-to-queue channel %) (ensure-seq (:consumers config))))
       state)
-    ;; FIXME: discover what exceptions to expect.
-    (catch Exception e
+    (catch IOException e
       (try
         ((:on-new-connection-fail (:config @state)) state e)
         (catch Exception e))

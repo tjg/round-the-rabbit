@@ -67,7 +67,7 @@ There's a bunch of knobs:
 
     :on-connection (fn [conn-state] (println "Connected!" conn-state))
     :on-new-connection-fail (fn [conn-state ex] (.printStackTrace ex))
-    :max-reconnect-attempts 10
+    :max-connect-attempts 10
     :ms-between-restarts 1
 
     :addresses [{:host "example.com" :port 5566}]

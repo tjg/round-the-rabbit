@@ -42,7 +42,7 @@
    :consumers []
    ;; Number or seq. If finite seq, eventually use last element
    :ms-between-restarts 500
-   :max-reconnect-attempts nil
+   :max-connect-attempts nil
    :on-connection (constantly nil)
    :on-new-connection-fail (constantly nil)
    :on-connection-shutdown (constantly nil)
@@ -139,7 +139,7 @@
 
 (defn connect-with-state! [state]
   (loop [attempt-count 0]
-    (when-not (= attempt-count (:max-reconnect-attempts (:config @state)))
+    (when-not (= attempt-count (:max-connect-attempts (:config @state)))
       (let [new-state (connect-once! state)]
         (if (:connection @new-state)
           (do

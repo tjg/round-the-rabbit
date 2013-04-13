@@ -17,7 +17,7 @@ Simple way to use RabbitMQ:
 * Type hints (warn on reflection)
 * How to deal with unrecoverable exceptions, like changing exchange type?
 * Tests
-* `connect!` should return a better object than a bare atom
+* `connect` should return a better object than a bare atom
 * Documentation
 
 ## Positive quirks
@@ -32,7 +32,7 @@ just gives it the default config):
 
 ```clojure
 (def conn-state
-  (connect!
+  (connect
    {:declare-exchanges [{:name "exchange-1" :type "fanout"}
                         {:name "exchange-2" :type "topic"}]
     :declare-queues ["queue-1"
@@ -45,14 +45,14 @@ it in a collection:
 
 ```clojure
 (def conn-state
-  (connect! {:declare-queues "queue-10"}))
+  (connect {:declare-queues "queue-10"}))
 ```
 
 Attach a consumer to a queue (the consumer doesn't have to be in a vector/list):
 
 ```clojure
 (def conn-state-10
-  (connect! {:declare-queues "queue-10"
+  (connect {:declare-queues "queue-10"
              :consumers [{:queue "queue-10"
                           :handler (fn [ch metadata ^bytes payload]
                                      (println (String. payload "UTF-8")))}]}))
@@ -62,7 +62,7 @@ There's a bunch of knobs:
 
 ```clojure
 (def conn-state
-  (connect!
+  (connect
    {:declare-queues "queue-1"
 
     :on-connection (fn [conn-state] (println "Connected!" conn-state))

@@ -1,15 +1,22 @@
 # round-the-rabbit
 
-A simple way to use RabbitMQ and Clojurewerk's excellent Langohr library.
+A simple way to use RabbitMQ (and Clojurewerkz's excellent Langohr library).
 
-Declare how you want to connect. (With a vocabulary faithful to AMQP
-concepts.) This lib takes care of auto-reconnect; and it's still easy
-to use Langohr directly, for more control.
+Declare your connection. (With a vocabulary faithful to AMQP
+concepts.) Behind the scenes, this lib takes care of details like
+auto-reconnect. And if you desire more control, it's still easy to use
+Langohr directly.
 
 
 ## Status
 
-**Not release-ready yet.**
+**Not released yet.** This is only "working prototype" quality.
+Wait a little bit.
+
+I'm writing this because learning details of RabbitMQ's Java lib was
+the most time-consuming part of writing a proof-of-concept Clojure
+service.
+
 
 ## TODO
 

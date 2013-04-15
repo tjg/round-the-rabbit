@@ -9,16 +9,26 @@
   (prerequisites
    (core/sleep anything) => anything)
 
-  (let [test-config {:max-reconnect-attempts 100
+  (let [config {:max-reconnect-attempts 100
                      :on-connection (fn [state] (println "Connected!"))}
-        new-state (atom {:config test-config
+        state (atom {:config config
                          :connection true})]
 
     (fact "tries connecting until connected"
-      (core/connect test-config) => anything
+      (core/connect config) => anything
       (provided
-        (core/connect-once! anything) =streams=> [(atom {}) (atom {}) new-state]
-          :times 3))))
+        (core/connect-once! anything) =streams=> [(atom {}) (atom {}) state]
+          :times 3))
+
+    (let [state (atom {:config (assoc config
+                                 :ms-between-restarts (iterate inc 100))
+                       :connection true})]
+      (fact "sleeps the desired number of times between reconnects"
+        (core/connect-with-state! state) => anything
+        (provided
+          (core/connect-once! anything) =streams=> [(atom {}) (atom {}) state]
+          (core/sleep 100) => anything
+          (core/sleep 101) => anything)))))
 
 (facts
   (fact

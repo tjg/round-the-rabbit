@@ -11,12 +11,13 @@
 
   (let [test-config {:max-reconnect-attempts 100
                      :on-connection (fn [state] (println "Connected!"))}
-        new-state (atom {:config test-config})]
+        new-state (atom {:config test-config
+                         :connection true})]
 
     (fact "tries connecting until connected"
       (core/connect test-config) => anything
       (provided
-        (core/connect-once! anything) =streams=> [nil nil new-state]
+        (core/connect-once! anything) =streams=> [(atom {}) (atom {}) new-state]
           :times 3))))
 
 (facts

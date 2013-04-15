@@ -33,12 +33,3 @@
     (provided
       (core/connect-once! anything) =streams=> [(atom {}) (atom {}) (atom {})]
       :times 2)))
-
-
-(facts
-  (fact
-    (core/ensure-sequential []) => [])
-
-  (fact
-    (core/ensure-sequential {}) => [{}]
-    (core/ensure-sequential [{}]) => [{}]))

@@ -27,9 +27,9 @@
       (core/sleep 102) => anything :times 0))
 
 
-  (fact "sleeps the desired number of times between reconnects"
+  (fact "obeys :max-reconnect-attempts"
     (core/connect-with-state!
       (atom {:config {:max-connect-attempts 2}})) => anything
     (provided
       (core/connect-once! anything) =streams=> [(atom {}) (atom {}) (atom {})]
-      :times 2)))
+        :times 2)))

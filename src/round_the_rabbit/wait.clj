@@ -6,5 +6,8 @@
   (map (fn [fixed] (+ fixed (rand scale-of-randomness)))
        (repeat init)))
 
-(defn bounded-exponential-backoff [init maximum]
-  (take-while #(< % maximum) (iterate #(* 2 %) init)))
+(defn truncated-exponential-backoff [init maximum]
+  (->> init
+       (iterate (partial * 2)) ;; keep doubling
+       (take-while #(< % maximum))
+       (map rand)))

@@ -10,6 +10,10 @@
     (rand anything) =streams=> [1 2 3]))
 
 
+(facts "doubling works"
+  (take 6 (wait/double 1)) => [1 2 4 8 16 32])
+
+
 (facts "truncated exponential backoff works"
   (fact "if we didn't randomize the results, it'd just all be doubled"
     (with-redefs [rand identity]

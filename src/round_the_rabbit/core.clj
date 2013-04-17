@@ -104,6 +104,7 @@
   (try
     (let [config (:config @state)
           conn (rmq/connect (merge (:login config) (first (:addresses config))))
+          ;; Remember connection now, to recover from failure correctly.
           _ (swap! state #(assoc % :connection conn))
           channel (rmq-channel/open conn)
           exchanges (doall (map #(declare-exchange channel %)
@@ -120,6 +121,8 @@
       ;; and "state" can have a new value.
       (.addShutdownListener conn on-connection-shutdown)
       (.addShutdownListener channel (make-on-channel-shutdown conn))
+      ;; This does everything connection-related in a new thread.
+      ;; So do it after adding the listeners.
       (doall (map #(subscribe-to-queue channel %)
                   (ensure-sequential (:consumers config))))
       state)
@@ -127,6 +130,7 @@
       (try
         ((:on-new-connection-fail (:config @state)) state e)
         (catch Exception e))
+      ;; Disable connection listener.
       (try
         (let [{:keys [connection on-connection-shutdown]} @state]
           (when connection
@@ -137,6 +141,11 @@
       (reset! state {:connection nil :channel nil :config (:config @state)})
       state)))
 
+;; FIXME: there may be some confusion, in that we never create a new
+;; state in connect-once!. So let's not take its return value too
+;; seriously?
+
+;; FIXME: Replace with https://github.com/joegallo/robert-bruce
 (defn connect-with-state! [state]
   (loop [attempt-count 0]
     (when-not (= attempt-count (:max-connect-attempts (:config @state)))

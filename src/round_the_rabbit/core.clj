@@ -1,6 +1,5 @@
 (ns round-the-rabbit.core
   (:require [langohr.core      :as rmq]
-            [langohr.basic     :as rmq-basic]
             [langohr.channel   :as rmq-channel]
             [langohr.consumers :as rmq-consumers]
             [langohr.exchange  :as rmq-exchange]
@@ -100,6 +99,12 @@
        (try (rmq/close conn)
             (catch IOException e))))))
 
+(defn add-shutdown-listener [conn-or-channel listener]
+  (.addShutdownListener conn-or-channel listener))
+
+(defn remove-shutdown-listener [conn-or-channel listener]
+  (.removeShutdownListener conn-or-channel listener))
+
 (defn connect-once! [state]
   (try
     (let [config (:config @state)
@@ -119,8 +124,8 @@
                      :on-connection-shutdown on-connection-shutdown})
       ;; Once we add a shutdown-listener, auto-reconnect can happen,
       ;; and "state" can have a new value.
-      (.addShutdownListener conn on-connection-shutdown)
-      (.addShutdownListener channel (make-on-channel-shutdown conn))
+      (add-shutdown-listener conn on-connection-shutdown)
+      (add-shutdown-listener channel (make-on-channel-shutdown conn))
       ;; This does everything connection-related in a new thread.
       ;; So do it after adding the listeners.
       (doall (map #(subscribe-to-queue channel %)
@@ -136,7 +141,7 @@
           (when connection
             (with-open [conn connection]
               (when on-connection-shutdown
-                (.removeShutdownListener connection on-connection-shutdown)))))
+                (remove-shutdown-listener connection on-connection-shutdown)))))
         (catch Exception e))
       (reset! state {:connection nil :channel nil :config (:config @state)})
       state)))

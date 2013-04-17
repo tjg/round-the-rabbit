@@ -1,7 +1,12 @@
 (ns round-the-rabbit.core-test
   (:use midje.sweet
         [clojure.pprint :only [pprint cl-format]])
-  (:require [round-the-rabbit.core :as core])
+  (:require [round-the-rabbit.core :as core]
+            [langohr.core      :as rmq]
+            [langohr.basic     :as rmq-basic]
+            [langohr.channel   :as rmq-channel]
+            [langohr.exchange  :as rmq-exchange]
+            [langohr.queue     :as rmq-queue])
   (:import java.io.IOException))
 
 
@@ -33,3 +38,20 @@
     (provided
       (core/connect-once! anything) =streams=> [(atom {}) (atom {}) (atom {})]
         :times 2)))
+
+(future-facts "sets up RabbitMQ connection"
+  (prerequisites
+   (rmq/connect anything) => anything
+   (rmq-channel/open anything) => anything
+   (rmq-exchange/declare anything anything anything) => anything
+   (rmq-exchange/declare anything anything anything anything anything) => anything
+   (rmq-queue/declare anything anything) => anything
+   (rmq-queue/declare anything anything anything anything) => anything
+   (rmq-queue/bind anything anything anything) => anything
+   (rmq-queue/bind anything anything anything anything anything) => anything
+   (rmq/shutdown-listener anything) => anything
+   (core/subscribe-to-queue anything anything) => anything
+   (core/add-shutdown-listener anything anything) => anything
+   (core/remove-shutdown-listener anything anything) => anything)
+
+  (core/connect {}) => anything)

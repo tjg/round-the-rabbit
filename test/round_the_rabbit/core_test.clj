@@ -54,4 +54,11 @@
    (core/add-shutdown-listener anything anything) => anything
    (core/remove-shutdown-listener anything anything) => anything)
 
-  (core/connect {}) => anything)
+  (core/connect {}) => anything
+
+  (fact "sets up connection")
+  (fact "sets up channels")
+  (fact "sets up exchanges")
+  (fact "sets up queues")
+  (fact "sets up bindings")
+  (fact "sets up queue consumers"))
